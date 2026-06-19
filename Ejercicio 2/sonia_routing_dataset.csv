@@ -1,0 +1,68 @@
+id,texto_usuario,categoria_esperada,categoria_predicha,multilabel_referencia,explicacion_referencia
+1,Calculá cuántos días pasaron entre el 10/03/2024 y el 25/04/2024.,CALCULADORA,CALCULADORA,[CALCULADORA],La tarea principal es operar con fechas.
+2,"Si una factura vence el 15/06/2024 y hoy es 02/06/2024, ¿cuántos días faltan?",CALCULADORA,CALCULADORA,[CALCULADORA],Requiere diferencia entre fechas.
+3,"Sumá los importes 12500, 8700 y 19400, y decime el total.",CALCULADORA,CALCULADORA,[CALCULADORA],Operación aritmética directa.
+4,Calculá el 21% de IVA sobre $340.000.,CALCULADORA,CALCULADORA,[CALCULADORA],Cálculo porcentual.
+5,"Si pagamos 6 cuotas iguales por un total de $180.000, ¿cuánto es cada cuota?",CALCULADORA,CALCULADORA,[CALCULADORA],División simple.
+6,Calculá cuántos días hábiles hay entre estas dos fechas.,CALCULADORA,CALENDARIO,[CALCULADORA],"Cálculo de calendario/hábiles, no agenda."
+7,Revisá este documento y calculá cuánto tiempo pasó entre la notificación y el vencimiento.,METADATA,CALCULADORA,"[METADATA, CALCULADORA]",Primero hay que extraer fechas del documento.
+8,Tomá las fechas del contrato adjunto y calculá la duración total del plazo.,METADATA,CALCULADORA,"[METADATA, CALCULADORA]",El cálculo depende de metadata documental.
+9,"Con estos montos del expediente, calculá el promedio reclamado.",CALCULADORA,CALCULADORA,[CALCULADORA],La acción principal es calcular un promedio.
+10,Convertí 48 horas a días y horas.,CALCULADORA,CALCULADORA,[CALCULADORA],Conversión matemática simple.
+11,Extraé la fecha de vencimiento del documento adjunto.,METADATA,METADATA,[METADATA],Pide identificar un dato puntual del documento.
+12,Decime quién firma esta resolución.,METADATA,METADATA,[METADATA],Busca metadata o entidad dentro del documento.
+13,Identificá el número de expediente mencionado en el archivo.,METADATA,METADATA,[METADATA],Extracción de campo específico.
+14,"Sacá la carátula, fecha, firmantes y número de actuación del documento.",METADATA,METADATA,[METADATA],Extracción estructurada de metadata.
+15,Revisá si el documento tiene fecha de notificación.,METADATA,METADATA,[METADATA],Verificación de presencia de dato documental.
+16,Extraé los importes mencionados en la factura adjunta.,METADATA,CALCULADORA,[METADATA],No calcula todavía; solo extrae valores.
+17,Buscá en el documento cuál es el organismo emisor.,METADATA,METADATA,[METADATA],Identificación de entidad emisora.
+18,Identificá todas las fechas importantes que aparezcan en este contrato.,METADATA,METADATA,[METADATA],Extracción de fechas desde texto documental.
+19,Extraé los datos principales del documento y después prepará un mail para enviarlos.,METADATA,MAILS,"[METADATA, MAILS]",Primero se necesitan los datos extraídos.
+20,"Tomá el archivo adjunto y decime si corresponde a una resolución, providencia o dictamen.",METADATA,METADATA,[METADATA],Clasificación documental por metadata/contenido.
+21,Redactá un mail para avisar que la reunión se cancela.,MAILS,MAILS,[MAILS],La tarea es redactar un correo.
+22,Escribile a Laura diciendo que ya está listo el informe.,MAILS,MAILS,[MAILS],Acción directa de comunicación por mail.
+23,Prepará una respuesta formal a este correo.,MAILS,MAILS,[MAILS],El objetivo es responder un mail.
+24,Redactá un mail amable para pedir más información sobre el expediente.,MAILS,MAILS,[MAILS],Generación de texto para correo.
+25,Mandale a Laura el resumen del expediente.,RESUMIDOR,MAILS,"[RESUMIDOR, MAILS]",Primero hay que generar el resumen.
+26,Extraé los datos del documento y enviáselos por mail al equipo.,METADATA,MAILS,"[METADATA, MAILS]",Primero hay que extraer datos.
+27,Escribí un mail con tono formal para informar el cambio de fecha de audiencia.,MAILS,MAILS,[MAILS],La tarea principal es redactar el aviso.
+28,Agendá una reunión mañana a las 10 con el equipo legal.,CALENDARIO,CALENDARIO,[CALENDARIO],Creación de evento.
+29,Reservá un espacio en el calendario para revisar el expediente el viernes.,CALENDARIO,CALENDARIO,[CALENDARIO],Bloqueo de agenda.
+30,Programá una reunión semanal los lunes a las 9.,CALENDARIO,CALENDARIO,[CALENDARIO],Evento recurrente.
+31,Mové la reunión de hoy a las 16 hs.,CALENDARIO,CALENDARIO,[CALENDARIO],Modificación de evento.
+32,Cancelá la reunión con Laura de mañana.,CALENDARIO,CALENDARIO,[CALENDARIO],Eliminación/cancelación de evento.
+33,Revisá si tengo disponibilidad el jueves a la tarde.,CALENDARIO,CALENDARIO,[CALENDARIO],Consulta de agenda.
+34,Agendá una reunión para comentar el resumen del expediente.,CALENDARIO,RESUMIDOR,[CALENDARIO],"Lo pedido es agendar, no resumir todavía."
+35,Buscá el vencimiento en el documento y agregalo al calendario.,METADATA,CALENDARIO,"[METADATA, CALENDARIO]",Primero hay que extraer la fecha.
+36,Creá un recordatorio para pagar la factura el 15/06.,CALENDARIO,CALENDARIO,[CALENDARIO],Recordatorio/evento de agenda.
+37,Agendá una audiencia para el 20/08 a las 11 con el juzgado.,CALENDARIO,CALENDARIO,[CALENDARIO],Alta directa de evento.
+38,Resumí este documento en no más de diez líneas.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Resumen directo.
+39,Haceme un resumen ejecutivo del expediente.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Síntesis general.
+40,Resumí las actuaciones principales y destacá los puntos críticos.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Síntesis con foco en puntos importantes.
+41,Leé este contrato y resumime las obligaciones de cada parte.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Resumen orientado por criterio.
+42,Prepará una síntesis breve de la resolución adjunta.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Resumen de documento.
+43,Resumí este mail largo y decime qué tengo que responder.,RESUMIDOR,MAILS,"[RESUMIDOR, MAILS]",Primero hay que resumir/comprender el mail.
+44,Buscá las últimas actuaciones del expediente y resumilas.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],"Para single label se asume que los documentos ya están disponibles; si no, requeriría búsqueda documental, pero no está entre los 5 módulos pedidos."
+45,Extraé los datos principales del documento y armá un resumen final.,METADATA,RESUMIDOR,"[METADATA, RESUMIDOR]",Primero hay extracción estructurada.
+46,Haceme un resumen comparando los argumentos de ambas partes.,RESUMIDOR,RESUMIDOR,[RESUMIDOR],Resumen analítico.
+47,Resumí el expediente y redactá un mail para enviarlo al área técnica.,RESUMIDOR,MAILS,"[RESUMIDOR, MAILS]","Primero se genera el resumen, luego el mail."
+48,Agendá una reunión de seguimiento para el próximo martes a las 11.,CALENDARIO,CALENDARIO,[CALENDARIO],Alta de evento directo en agenda.
+49,Poné en mi calendario una llamada con Martín el jueves a las 15.,CALENDARIO,CALENDARIO,[CALENDARIO],La acción principal es crear un evento.
+50,Bloqueame media hora mañana a la mañana para revisar pendientes.,CALENDARIO,CALENDARIO,[CALENDARIO],Reserva de espacio en calendario.
+51,Reprogramá la reunión con el área técnica para el viernes a las 10.,CALENDARIO,CALENDARIO,[CALENDARIO],Modificación de evento existente.
+52,Cancelá el recordatorio de la audiencia de mañana.,CALENDARIO,CALENDARIO,[CALENDARIO],Cancelación de evento o recordatorio.
+53,Creá un evento para la capacitación del lunes de 9 a 12.,CALENDARIO,CALENDARIO,[CALENDARIO],Alta de evento con duración.
+54,Fijá una reunión quincenal los miércoles a las 14.,CALENDARIO,CALENDARIO,[CALENDARIO],Evento recurrente en calendario.
+55,Avisame en el calendario que el informe vence el 30/09.,CALENDARIO,CALENDARIO,[CALENDARIO],Creación de recordatorio con fecha concreta.
+56,Reservá el viernes a la tarde para preparar la presentación.,CALENDARIO,CALENDARIO,[CALENDARIO],Bloqueo de disponibilidad.
+57,Pasá la reunión de las 13 a las 16.,CALENDARIO,CALENDARIO,[CALENDARIO],Cambio de horario de un evento.
+58,Agendá una llamada con proveedores para el 12/08 a las 17.,CALENDARIO,CALENDARIO,[CALENDARIO],Creación de reunión con fecha y hora.
+59,Sacá del calendario la reunión semanal del equipo.,CALENDARIO,CALENDARIO,[CALENDARIO],Eliminación de evento recurrente.
+60,Chequeá si tengo libre el lunes entre las 10 y las 12.,CALENDARIO,CALENDARIO,[CALENDARIO],Consulta de disponibilidad.
+61,Programá un recordatorio para enviar el reporte el viernes.,CALENDARIO,CALENDARIO,[CALENDARIO],Recordatorio en calendario.
+62,Agregá al calendario una visita técnica para el miércoles al mediodía.,CALENDARIO,CALENDARIO,[CALENDARIO],Alta de evento.
+63,Mové el bloque de trabajo profundo a mañana a las 8.,CALENDARIO,CALENDARIO,[CALENDARIO],Reprogramación de bloque existente.
+64,Creá una reunión con Ana y Pablo para revisar el cronograma.,CALENDARIO,CALENDARIO,[CALENDARIO],Creación de evento con asistentes.
+65,Poné una alerta una hora antes de la audiencia del 20/08.,CALENDARIO,CALENDARIO,[CALENDARIO],Recordatorio asociado a calendario.
+66,Reservame todos los viernes de 15 a 16 para seguimiento del proyecto.,CALENDARIO,CALENDARIO,[CALENDARIO],Evento recurrente semanal.
+67,Agendá una revisión mensual del expediente el primer lunes de cada mes.,CALENDARIO,CALENDARIO,[CALENDARIO],Evento recurrente mensual.

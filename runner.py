@@ -13,8 +13,9 @@ from openai import OpenAI
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DATASET_PATH = BASE_DIR / "dataset_resumidor_muestra11.csv"
-PROMPT_PATH = BASE_DIR / "prompt_resumidor.md"
+EJ1_DIR = BASE_DIR / "Ejercicio 1"
+DATASET_PATH = EJ1_DIR / "dataset_resumidor_muestra11.csv"
+PROMPT_PATH = EJ1_DIR / "prompt_resumidor.md"
 OUTPUT_DIR = BASE_DIR / "outputs"
 
 JUDGE_MODEL = "gpt-5.4"
@@ -222,20 +223,14 @@ Resumen generado:
             return usage
         return {"raw": str(usage)}
 
-    def run_for_first_row(self) -> Dict[str, Any]:
-        OUTPUT_DIR.mkdir(exist_ok=True)
-        df = self.load_dataset()
-        row = df.iloc[0]
-        text = row["texto_original"]
-        critical_points = row["puntos_criticos"]
-
+    def evaluate_document(self, document_index: int, text: str, critical_points: str) -> Dict[str, Any]:
         runs: List[SummaryRun] = []
         for model in CANDIDATE_MODELS:
             summary_result = self.generate_summary(model, text)
             judge_result = self.judge_summary(text, critical_points, summary_result["summary"])
             runs.append(
                 SummaryRun(
-                    document_index=0,
+                    document_index=document_index,
                     model=model,
                     summary=summary_result["summary"],
                     quality_score=float(judge_result["quality_score"]),
@@ -258,20 +253,53 @@ Resumen generado:
             by=["quality_score", "coverage_score", "factuality_score", "clarity_score"],
             ascending=False,
         )
-
         winner = results_df.iloc[0].to_dict()
+        return {
+            "document_index": document_index,
+            "winner": winner,
+            "results": results_df.to_dict(orient="records"),
+        }
+
+    def run(self, rows: Optional[int] = 1) -> Dict[str, Any]:
+        OUTPUT_DIR.mkdir(exist_ok=True)
+        df = self.load_dataset()
+
+        if rows is not None and rows <= 0:
+            raise ValueError("rows debe ser mayor a 0 o None para ejecutar todas las filas")
+
+        selected_df = df if rows is None else df.head(rows)
+        documents = []
+        for document_index, row in selected_df.iterrows():
+            documents.append(
+                self.evaluate_document(
+                    document_index=int(document_index),
+                    text=row["texto_original"],
+                    critical_points=row["puntos_criticos"],
+                )
+            )
+
+        flattened_results: List[Dict[str, Any]] = []
+        for document in documents:
+            flattened_results.extend(document["results"])
+
+        results_df = pd.DataFrame(flattened_results)
         json_path = OUTPUT_DIR / "summary_experiment_results.json"
         csv_path = OUTPUT_DIR / "summary_experiment_results.csv"
         md_path = OUTPUT_DIR / "summary_experiment_report.md"
 
+        executed_scope = "all_rows" if rows is None else ("first_row_only" if rows == 1 else f"first_{rows}_rows")
         payload = {
-            "document_executed": 0,
+            "executed_rows_count": int(len(selected_df)),
+            "document_indices_executed": [int(i) for i in selected_df.index.tolist()],
             "total_rows_available": int(len(df)),
-            "executed_scope": "first_row_only",
+            "executed_scope": executed_scope,
             "judge_model": JUDGE_MODEL,
             "candidate_models": CANDIDATE_MODELS,
-            "winner": winner,
-            "results": results_df.to_dict(orient="records"),
+            "documents": documents,
+            # Mantiene compatibilidad con consumidores existentes para ejecución de una fila.
+            "document_executed": int(selected_df.index.tolist()[0]) if len(selected_df) == 1 else None,
+            "winner": documents[0]["winner"] if len(documents) == 1 else None,
+            "results": documents[0]["results"] if len(documents) == 1 else [],
         }
 
         json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -279,41 +307,49 @@ Resumen generado:
         md_path.write_text(self.build_markdown_report(payload), encoding="utf-8")
         return payload
 
+    def run_for_first_row(self) -> Dict[str, Any]:
+        return self.run(rows=1)
+
     @staticmethod
     def build_markdown_report(payload: Dict[str, Any]) -> str:
-        winner = payload["winner"]
+        document_reports = payload.get("documents", [])
+        first_winner = payload.get("winner") or (document_reports[0]["winner"] if document_reports else {})
         lines = [
             "# Reporte del experimento de resumidor",
             "",
-            f"- Documento ejecutado: fila {payload['document_executed'] + 1}",
+            f"- Cantidad de documentos ejecutados: {payload.get('executed_rows_count', 0)}",
+            f"- Índices ejecutados: {payload.get('document_indices_executed', [])}",
             f"- Cantidad total de filas disponibles: {payload['total_rows_available']}",
             f"- Alcance ejecutado: {payload['executed_scope']}",
             f"- Modelo juez: {payload['judge_model']}",
-            f"- Modelo ganador: {winner['model']}",
-            f"- Puntaje global: {winner['quality_score']}",
+            f"- Modelo ganador (primer documento): {first_winner.get('model', 'N/A')}",
+            f"- Puntaje global (primer documento): {first_winner.get('quality_score', 'N/A')}",
             "",
             "## Resultados por modelo",
             "",
         ]
-        for row in payload["results"]:
-            lines.extend(
-                [
-                    f"### {row['model']}",
-                    f"- quality_score: {row['quality_score']}",
-                    f"- coverage_score: {row['coverage_score']}",
-                    f"- factuality_score: {row['factuality_score']}",
-                    f"- clarity_score: {row['clarity_score']}",
-                    f"- concision_score: {row['concision_score']}",
-                    f"- latency_seconds: {row['latency_seconds']}",
-                    f"- strengths: {', '.join(row['strengths']) if row['strengths'] else 'N/A'}",
-                    f"- weaknesses: {', '.join(row['weaknesses']) if row['weaknesses'] else 'N/A'}",
-                    f"- missing_critical_points: {', '.join(row['missing_critical_points']) if row['missing_critical_points'] else 'Ninguno'}",
-                    "",
-                    "#### Resumen generado",
-                    row["summary"],
-                    "",
-                ]
-            )
+        for document in document_reports:
+            lines.append(f"### Documento índice {document['document_index']}")
+            lines.append("")
+            for row in document["results"]:
+                lines.extend(
+                    [
+                        f"#### {row['model']}",
+                        f"- quality_score: {row['quality_score']}",
+                        f"- coverage_score: {row['coverage_score']}",
+                        f"- factuality_score: {row['factuality_score']}",
+                        f"- clarity_score: {row['clarity_score']}",
+                        f"- concision_score: {row['concision_score']}",
+                        f"- latency_seconds: {row['latency_seconds']}",
+                        f"- strengths: {', '.join(row['strengths']) if row['strengths'] else 'N/A'}",
+                        f"- weaknesses: {', '.join(row['weaknesses']) if row['weaknesses'] else 'N/A'}",
+                        f"- missing_critical_points: {', '.join(row['missing_critical_points']) if row['missing_critical_points'] else 'Ninguno'}",
+                        "",
+                        "##### Resumen generado",
+                        row["summary"],
+                        "",
+                    ]
+                )
         return "\n".join(lines)
 
 
@@ -330,6 +366,17 @@ if __name__ == "__main__":
         action="store_true",
         help="Alias legacy de --mode simulate",
     )
+    parser.add_argument(
+        "--rows",
+        type=int,
+        default=1,
+        help="Cantidad de filas a ejecutar desde el inicio del dataset (default: 1)",
+    )
+    parser.add_argument(
+        "--all-rows",
+        action="store_true",
+        help="Ejecuta todas las filas del dataset (escalable a 1000)",
+    )
     args = parser.parse_args()
 
     selected_mode = "simulate" if args.simulate else args.mode
@@ -340,6 +387,9 @@ if __name__ == "__main__":
     else:
         experiment = SummarizerExperiment(simulate=False)
 
-    result = experiment.run_for_first_row()
+    rows_to_run = None if args.all_rows else args.rows
+    result = experiment.run(rows=rows_to_run)
     print(f"execution_mode={ 'simulated' if experiment.simulate else 'real' }")
-    print(json.dumps(result["winner"], ensure_ascii=False, indent=2))
+    print(f"executed_rows_count={result['executed_rows_count']}")
+    if result.get("winner"):
+        print(json.dumps(result["winner"], ensure_ascii=False, indent=2))

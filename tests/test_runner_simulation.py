@@ -39,6 +39,19 @@ class TestRunnerSimulation(unittest.TestCase):
         scores = [row["quality_score"] for row in parsed["results"]]
         self.assertTrue(all(isinstance(score, (int, float)) for score in scores))
 
+    def test_simulation_runs_multiple_rows(self) -> None:
+        experiment = SummarizerExperiment(simulate=True)
+        payload = experiment.run(rows=2)
+
+        self.assertEqual(payload["executed_rows_count"], 2)
+        self.assertEqual(payload["document_indices_executed"], [0, 1])
+        self.assertEqual(payload["executed_scope"], "first_2_rows")
+        self.assertEqual(len(payload["documents"]), 2)
+
+        for document in payload["documents"]:
+            self.assertEqual(len(document["results"]), 3)
+            self.assertIn("winner", document)
+
 
 if __name__ == "__main__":
     unittest.main()

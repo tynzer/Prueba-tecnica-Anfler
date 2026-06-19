@@ -29,7 +29,7 @@ def validate_exercise_1() -> dict:
 
 
 def validate_exercise_2() -> dict:
-    df = pd.read_csv(BASE_DIR / "sonia_routing_dataset.csv")
+    df = pd.read_csv(BASE_DIR / "Ejercicio 2" / "sonia_routing_dataset.csv")
     y_true = df["categoria_esperada"]
     y_pred = df["categoria_predicha"]
 

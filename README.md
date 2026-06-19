@@ -33,6 +33,17 @@ Permite validar flujo completo, archivos de salida y seleccion de ganador sin co
 .venv\\Scripts\\python.exe runner.py --simulate
 ```
 
+### Control de alcance (escalable a 1000 documentos)
+Por defecto ejecuta 1 fila (requisito de la prueba), pero el runner ya soporta múltiples filas o todas:
+
+```bash
+# 5 filas
+.venv\\Scripts\\python.exe runner.py --rows 5 --mode simulate
+
+# todas las filas del dataset (aplicable al dataset completo de 1000)
+.venv\\Scripts\\python.exe runner.py --all-rows --mode real
+```
+
 Salidas generadas en `outputs/`:
 - `summary_experiment_results.json`
 - `summary_experiment_results.csv`
@@ -60,7 +71,8 @@ Tambien se puede forzar modo real con:
 ## Ejercicio 1 - Notebook de experimentos
 Notebook: `experimentos.ipynb`
 
-Incluye ejecucion del experimento en modo simulacion y lectura de resultados.
+Incluye ejecucion del experimento en modo simulacion, lectura de resultados y pruebas de robustez/escalabilidad para respaldar decisiones.
+Tambien incluye un smoke test real de API key que toma una fila del dataset tecnico y evalua contra `puntos_criticos`, guardando evidencia en `outputs/api_key_smoke_test.json`.
 
 ## Ejercicio 2 - Analisis del clasificador
 Notebook: `analisis_clasificador.ipynb`
