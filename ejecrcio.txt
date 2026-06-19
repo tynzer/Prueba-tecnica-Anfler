@@ -1,0 +1,100 @@
+Prueba técnica  
+Se espera que el candidato actúe como “owner” de la solución: que entienda el problema, 
+priorice lo importante, cuide el uso de recursos, optimice el tiempo disponible y comunique 
+claramente lo realizado. 
+Se permite el uso de herramientas de inteligencia artificial, pero el candidato deberá 
+comprender, justificar y defender lo entregado. Los resultados de estos ejercicios podrían 
+ser insumo para decisiones de producto, arquitectura, estrategia, costos u otras áreas, por 
+lo que se valorará especialmente la claridad conceptual, la trazabilidad de las decisiones y 
+la capacidad de explicar qué se hizo, por qué se hizo y qué conclusiones pueden tomarse. 
+● La solución deberá subirse a un repositorio de GitHub y compartirse al finalizar la 
+prueba. 
+● Tiempo de resolución: 48 horas. 
+Ejercicio 1 
+Tenemos un producto llamado “SonIA”, un asistente agéntico que ayuda en tareas 
+administrativas de distintos dominios. 
+El sistema cuenta con un orquestador central y distintos componentes especializados, por 
+ejemplo: 
+● Subagente calculador: usa un entorno de ejecución de código para tareas de 
+finanzas, fechas y operaciones similares. 
+● Módulo de análisis de metadata: interpreta metadata de documentos. 
+● Módulo de gestión de servicio de correo electrónico.  
+● Módulo de gestión de calendarios. 
+● Componente resumidor de documentos.. 
+Actualmente estamos teniendo un problema de costos y decidimos evaluar el reemplazo del 
+modelo utilizado por el componente resumidor, ya que detectamos que tiene un impacto 
+importante en el consumo total de tokens del sistema. 
+Objetivo: 
+Diseñar e implementar un experimento que permita evaluar tres modelos resumidores 
+candidatos para reemplazar al modelo actual. Para esto se deberá utilizar un dataset que 
+contiene distintos documentos con sus respectivos puntos críticos esperados. 
+Cada fila contiene: -  
+`texto_original`: documento a resumir. 
+-  
+`puntos_criticos`: información definida por un experto del dominio que debería estar 
+representada correctamente en un buen resumen. Esta columna se entrega como 
+referencia para la evaluación de calidad, no como parte del documento a resumir. 
+Para cada documento del dataset, el sistema deberá: 
+1. Generar un resumen con cada uno de los tres modelos candidatos. 
+2. Evaluar automáticamente la calidad de cada resumen utilizando el modelo gpt-5.4 
+como juez. 
+3. Comparar la performance alcanzada por los modelos resumidores candidatos. 
+4. Registrar los resultados de evaluación y el modelo ganador para ese documento. 
+Consideraciones:  - - - - - 
+El componente resumidor utiliza gpt-5.4. Se asume que su performance cumple con 
+los requerimientos de la tarea asignada. 
+El dataset general de evaluación tiene 1000 documentos. A los fines de esta prueba, 
+el desarrollador solo tendrá una muestra representativa de 11 documentos para 
+diseñar el experimento, pero deberá ejecutar la solución únicamente sobre la 
+primera fila. No obstante, el experimento debe cumplir con todos los requerimientos 
+necesarios para ser ejecutado en los 1000 documentos.  
+Solo utilizar modelos del proveedor OpenAI. (se les compartirá una API KEY para 
+realizar la prueba) 
+Los modelos a utilizarse como candidatos quedan a criterio del desarrollador.  
+Se entrega una prompt base de referencia para el componente resumidor, ya que el 
+foco de este ejercicio no está en el diseño de la prompt de resumen. El candidato 
+podrá utilizarla, modificarla o proponer una variante, siempre que mantenga el 
+objetivo funcional del componente. 
+Entregables: - - - 
+Código para ejecutar el experimento completo (`runner.py`). 
+Realizar las pruebas que consideren pertinentes para respaldar sus decisiones en 
+`experimentos.ipynb`. 
+README breve con instrucciones para ejecutar la solución. 
+Ejercicio 2 
+SonIA cuenta con un orquestador central que recibe solicitudes de usuarios y debe decidir a 
+qué componente especializado derivar cada petición. 
+En este ejercicio se trabajará sobre un clasificador semántico encargado de identificar cuál 
+es el primer módulo que debería intervenir para resolver correctamente la solicitud del 
+usuario. 
+Los módulos posibles son: 
+● CALCULADORA 
+● METADATA 
+● MAILS 
+● CALENDARIO 
+● RESUMIDOR 
+Se entrega un dataset con predicciones generadas por un primer modelo clasificador. 
+Cada fila contiene: 
+● texto_usuario: solicitud realizada por el usuario. 
+● categoria_esperada: módulo correcto al que debería derivarse inicialmente la 
+petición. 
+● categoria_predicha: módulo predicho por el clasificador evaluado. 
+● multilabel_referencia: proviene de la planificación de ruta. 
+● explicacion_referencia: explica el contexto del ejemplo. 
+Objetivo 
+Evaluar el comportamiento del clasificador a partir de las predicciones provistas y elaborar 
+un informe sobre su desempeño. 
+Consideraciones 
+Algunas solicitudes pueden involucrar más de una acción. Sin embargo, para este ejercicio 
+se evalúa únicamente el primer módulo que debería intervenir. 
+Por ejemplo, si una solicitud requiere generar información antes de enviarla por mail, la 
+categoría esperada será el módulo que debe producir primero esa información. 
+Las columnas multilabel_referencia y explicacion_referencia se incluyen como contexto 
+adicional para comprender mejor cada ejemplo, pero la evaluación debe realizarse sobre 
+categoria_esperada y categoria_predicha. 
+No se espera entrenar un modelo nuevo ni modificar las predicciones provistas. El foco del 
+ejercicio está en analizar el comportamiento del clasificador. 
+Entregables 
+El candidato deberá entregar: 
+● analisis_clasificador.ipynb 
+El notebook deberá incluir el análisis realizado, el código utilizado y una conclusión final 
+fundamentada en los resultados obtenidos. 
