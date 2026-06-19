@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local secrets and env
+.env
+
+# Generated artifacts
+outputs/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

@@ -1,10 +1,11 @@
+import argparse
 import json
 import math
 import os
 import re
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -42,15 +43,21 @@ class SummaryRun:
 
 
 class SummarizerExperiment:
-    def __init__(self) -> None:
+    def __init__(self, simulate: Optional[bool] = None) -> None:
         load_dotenv()
         api_key = os.getenv("OPENAI_API_KEY")
+        self.simulate = (not bool(api_key)) if simulate is None else simulate
+        self.prompt_template = PROMPT_PATH.read_text(encoding="utf-8")
+
+        if self.simulate:
+            self.client = None
+            return
+
         if not api_key:
             raise RuntimeError(
                 "OPENAI_API_KEY no está configurada. Creá un archivo .env o exportá la variable antes de ejecutar."
             )
         self.client = OpenAI(api_key=api_key)
-        self.prompt_template = PROMPT_PATH.read_text(encoding="utf-8")
 
     def load_dataset(self) -> pd.DataFrame:
         df = pd.read_csv(DATASET_PATH)
@@ -63,6 +70,9 @@ class SummarizerExperiment:
 
     def generate_summary(self, model: str, text: str) -> Dict[str, Any]:
         import time
+
+        if self.simulate:
+            return self.simulate_summary(model, text)
 
         started = time.perf_counter()
         response = self.client.responses.create(
@@ -77,6 +87,9 @@ class SummarizerExperiment:
         }
 
     def judge_summary(self, text: str, critical_points: str, summary: str) -> Dict[str, Any]:
+        if self.simulate:
+            return self.simulate_judge(text, critical_points, summary)
+
         judge_prompt = f"""
 Sos un evaluador experto de resúmenes documentales.
 
@@ -126,6 +139,78 @@ Resumen generado:
         result = json.loads(match.group(0))
         result["usage"] = getattr(response, "usage", None)
         return result
+
+    @staticmethod
+    def _first_sentences(text: str, n: int) -> str:
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+        selected = [s for s in sentences if s][:n]
+        return " ".join(selected).strip()
+
+    def simulate_summary(self, model: str, text: str) -> Dict[str, Any]:
+        base = self._first_sentences(text, 4)
+        style_suffix = {
+            "gpt-4.1-mini": " Prioriza síntesis breve y operativa.",
+            "gpt-4.1": " Incluye detalle equilibrado entre contexto, impacto y acciones.",
+            "gpt-4o-mini": " Enfatiza claridad y próximos pasos accionables.",
+        }.get(model, "")
+
+        summary = f"{base}{style_suffix}".strip()
+        return {
+            "summary": summary,
+            "usage": {
+                "input_tokens": 0,
+                "output_tokens": max(1, len(summary.split())),
+                "total_tokens": max(1, len(summary.split())),
+                "mode": "simulated",
+            },
+            "latency_seconds": 0.01,
+        }
+
+    @staticmethod
+    def _extract_keywords(text: str) -> List[str]:
+        words = re.findall(r"[A-Za-zÁÉÍÓÚáéíóúñÑ0-9]+", text.lower())
+        stopwords = {
+            "de", "la", "el", "y", "en", "que", "los", "las", "un", "una", "por", "con",
+            "del", "al", "se", "para", "su", "más", "sin", "como", "entre", "fue", "antes",
+            "sobre", "a", "o", "lo", "le", "es", "si", "no", "ya", "sus", "esta", "este",
+        }
+        return [w for w in words if len(w) > 3 and w not in stopwords]
+
+    def simulate_judge(self, text: str, critical_points: str, summary: str) -> Dict[str, Any]:
+        critical_keywords = set(self._extract_keywords(critical_points))
+        summary_keywords = set(self._extract_keywords(summary))
+
+        if not critical_keywords:
+            overlap_ratio = 0.7
+        else:
+            overlap_ratio = len(critical_keywords & summary_keywords) / len(critical_keywords)
+
+        coverage = round(55 + overlap_ratio * 40, 1)
+        factuality = 88.0
+        clarity = 82.0 if len(summary.split()) > 40 else 76.0
+        concision = 84.0 if len(summary.split()) < 140 else 72.0
+        quality = round((coverage * 0.45) + (factuality * 0.25) + (clarity * 0.2) + (concision * 0.1), 1)
+
+        missing_points = []
+        if overlap_ratio < 0.5:
+            missing_points.append("Falta cubrir una parte importante de los puntos críticos esperados")
+
+        return {
+            "quality_score": quality,
+            "coverage_score": coverage,
+            "factuality_score": factuality,
+            "clarity_score": clarity,
+            "concision_score": concision,
+            "strengths": [
+                "Resumen coherente y legible",
+                "Mantiene foco en el problema operativo",
+            ],
+            "weaknesses": [
+                "Evaluación simulada sin juez externo",
+            ],
+            "missing_critical_points": missing_points,
+            "usage": {"mode": "simulated", "total_tokens": 0},
+        }
 
     @staticmethod
     def normalize_usage(usage: Any) -> Dict[str, Any]:
@@ -233,6 +318,28 @@ Resumen generado:
 
 
 if __name__ == "__main__":
-    experiment = SummarizerExperiment()
+    parser = argparse.ArgumentParser(description="Ejecuta el experimento del componente resumidor")
+    parser.add_argument(
+        "--mode",
+        choices=["auto", "simulate", "real"],
+        default="auto",
+        help="Modo de ejecución: auto (usa API key si existe), simulate o real",
+    )
+    parser.add_argument(
+        "--simulate",
+        action="store_true",
+        help="Alias legacy de --mode simulate",
+    )
+    args = parser.parse_args()
+
+    selected_mode = "simulate" if args.simulate else args.mode
+    if selected_mode == "auto":
+        experiment = SummarizerExperiment(simulate=None)
+    elif selected_mode == "simulate":
+        experiment = SummarizerExperiment(simulate=True)
+    else:
+        experiment = SummarizerExperiment(simulate=False)
+
     result = experiment.run_for_first_row()
+    print(f"execution_mode={ 'simulated' if experiment.simulate else 'real' }")
     print(json.dumps(result["winner"], ensure_ascii=False, indent=2))
